@@ -15,8 +15,8 @@ export function isExternal(path) {
  * @returns {Boolean}
  */
 export function validUsername(str) {
-  const valid_map = ['admin', 'editor']
-  return valid_map.indexOf(str.trim()) >= 0
+  // 以字母开头，长度在3-18之间，只能包含字符、数字和下划线。
+  return /^[a-zA-Z]\w{2,17}$/.test(str)
 }
 
 export function validPhoneNumber(str) {

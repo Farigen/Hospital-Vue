@@ -1,20 +1,19 @@
 <template>
   <div class="login-container">
     <MyHeader/>
-    <!--<el-image :src="urlOfImg"></el-image>-->
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" autocomplete="on" label-position="left">
+    <el-form ref="registerForm" :model="registerForm" :rules="loginRules" class="login-form" autocomplete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">用户登录</h3>
+        <h3 class="title">用户注册</h3>
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="phoneNumber">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
         <el-input
           ref="username"
-          v-model="loginForm.username"
+          v-model="registerForm.username"
           placeholder="Username"
           name="username"
           type="text"
@@ -31,7 +30,7 @@
           <el-input
             :key="passwordType"
             ref="password"
-            v-model="loginForm.password"
+            v-model="registerForm.password"
             :type="passwordType"
             placeholder="Password"
             name="password"
@@ -39,7 +38,31 @@
             autocomplete="on"
             @keyup.native="checkCapslock"
             @blur="capsTooltip = false"
-            @keyup.enter.native="handleLogin"
+            @keyup.enter.native="handleRegister"
+          />
+          <span class="show-pwd" @click="showPwd">
+            <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+          </span>
+        </el-form-item>
+      </el-tooltip>
+
+      <el-tooltip v-model="capsTooltip" content="大写已锁定！" placement="right" manual>
+        <el-form-item prop="confirmPassword">
+          <span class="svg-container">
+            <svg-icon icon-class="password" />
+          </span>
+          <el-input
+            :key="passwordType"
+            ref="password"
+            v-model="registerForm.confirmPassword"
+            :type="passwordType"
+            placeholder="Password"
+            name="confirmPassword"
+            tabindex="2"
+            autocomplete="on"
+            @keyup.native="checkCapslock"
+            @blur="capsTooltip = false"
+            @keyup.enter.native="handleRegister"
           />
           <span class="show-pwd" @click="showPwd">
             <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
@@ -55,7 +78,7 @@
                   </span>
                   <el-input class="verificationCodeInput"
                           ref="verificationCode"
-                          v-model="loginForm.verificationCode"
+                          v-model="registerForm.verificationCode"
                           name="verificationCode"
                           type="text"
                           tabindex="3"
@@ -63,12 +86,11 @@
                   />
               </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <img id="imgVerifyCode"  style="margin-left:20px;margin-top:10px;cursor:pointer;" onclick="javascript:changeVerifyCode();" src="../../assets/VerifyCodeAction_getVerifyCode.jpg" />
+          <el-col :span="8" id="codeImage">
           </el-col>
       </el-row>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button><!--.native.prevent-->
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleRegister">登录</el-button>
 
       <div style="position:relative;margin-top: 30px">
         <!--<div class="tips">
@@ -84,21 +106,68 @@
         </el-button>
       </div>
     </el-form>
-
+    <my-footer/>
   </div>
 </template>
 
 <script>
-import { validUsername } from '../../utils/validate'
+import { validPhoneNumber } from '../../utils/validate'
 import MyHeader from '../../components/common/MyHeader'
+import MyFooter from '../../components/common/MyFooter'
+import axios from 'axios'
+import qs from 'qs'
+import Vue from 'vue'
+
+//image的click事件不能触发。vue没有将其作为vue的模板解析渲染,不用v-html而是component模板编译
+//https://blog.csdn.net/qq_31393401/article/details/81017912
+let ImageComponent = Vue.extend({
+  template: '<el-image id="imgVerifyCode"  style="margin-left:20px;margin-top:10px;cursor:pointer;" @click.native="changeVerifyCode" :src="codeSrc"  alt=""/>',
+  computed:{
+    codeSrc: function () {
+      return "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+    }
+  },
+  methods: {
+    //看不清，换一张
+    changeVerifyCode() {
+      // this.loginForm.codeSrc = "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+      let img = document.getElementById("imgVerifyCode");
+      img.src = "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+    }
+  }
+});
+let component = new ImageComponent().$mount();
 
 export default {
-  name: 'Login',
-  components: {MyHeader},
+  name: 'Register',
+  components: {MyHeader, MyFooter},
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('请输入正确的用户名！'))
+    //图形验证码验证
+    const checkCode = (rule, value, callback)=>{
+      let regex = /^\d{6}$/;
+      if (!regex.test(value)) {
+        callback(new Error("输入6位数字验证码"));
+      } else {
+        //解决跨域时每次访问请求时sessionId不同 https://blog.csdn.net/weixin_40461281/article/details/81196932
+        axios.defaults.withCredentials = true;
+        axios.post("http://localhost:8081/checkVerifyCode", qs.stringify({
+          name: "loginCode",
+          code: this.registerForm.verificationCode
+        })).then(res=>{
+          if (res.data.flag==="no"){
+            // alert(res.data.message);
+            callback(new Error(res.data.message));
+          }else {
+            callback();
+          }
+        }).catch(err=>{
+          console.log(err)
+        });
+      }
+    };
+    const validPhoneNumber = (rule, value, callback) => {
+      if (!validPhoneNumber(value)) {
+        callback(new Error('请输入正确的手机号！'))
       } else {
         callback()
       }
@@ -111,45 +180,35 @@ export default {
       }
     }
     return {
-      urlOfImg: require('../../assets/jyzn-p.jpg'),
-      loginForm: {
-        username: 'admin',
-        password: '111111',
+      registerForm: {
+        username: '18251806718',
+        password: '123456',
+        confirmPassword: '123456',
         verificationCode: ''
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        username: [{ required: true, trigger: 'blur', validator: validPhoneNumber }],
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        confirmPassword: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        verificationCode: [{ required: true, trigger: 'blur', validator: checkCode }]
       },
       passwordType: 'password',
       capsTooltip: false,
       loading: false,
       showDialog: false,
       redirect: undefined,
-      otherQuery: {}
-    }
-  },
-  watch: {
-    $route: {
-      handler: function(route) {
-        /*const query = route.query
-        if (query) {
-          this.redirect = query.redirect
-          this.otherQuery = this.getOtherQuery(query)
-        }*/
-      },
-      immediate: true
     }
   },
   created() {
     // window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
-    if (this.loginForm.username === '') {
+    if (this.registerForm.username === '') {
       this.$refs.username.focus()
-    } else if (this.loginForm.password === '') {
+    } else if (this.registerForm.password === '') {
       this.$refs.password.focus()
     }
+    document.getElementById('codeImage').appendChild(component.$el);
   },
   destroyed() {
     // window.removeEventListener('storage', this.afterQRScan)
@@ -177,11 +236,11 @@ export default {
         this.$refs.password.focus()
       })
     },
-    handleLogin() {
-      /*this.$refs.loginForm.validate(valid => {
+    handleRegister() {
+      /*this.$refs.registerForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
+          this.$store.dispatch('user/login', this.registerForm)
             .then(() => {
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
               this.loading = false
@@ -194,13 +253,23 @@ export default {
           return false
         }
       })*/
-      if (this.loginForm.username=='admin'&&this.loginForm.password=='111111'){
-        this.$router.push({
-            path: '/login2'
-          })
+      if (!(this.registerForm.password === this.registerForm.confirmPassword)) {
+        alert('两次输入的密码不同！');
       }else {
-        console.log('error submit!!')
-        return false
+        axios.post('http://localhost:8081/doRegistration', qs.stringify({
+          phoneNumber : this.registerForm.username,
+          password : this.registerForm.password
+        })).then((res)=>{
+          if (res.data.flag==='success'){
+            this.$router.push({
+              path: '/'
+            })
+          } else {
+            alert("服务器端产生错误，请重试!")
+          }}).catch(function (err) {
+          alert("Error:"+err);
+          console.log(err)
+        });
       }
     },
     getOtherQuery(query) {

@@ -1,6 +1,6 @@
 <template>
   <el-table
-    :data="tableData"
+    :data="records"
     stripe
     style="width: 100%;margin-left: 10px;">
     <el-table-column
@@ -9,17 +9,17 @@
       width="225">
     </el-table-column>
     <el-table-column
-      prop="name"
+      prop="docName"
       label="专家姓名"
       width="100">
     </el-table-column>
     <el-table-column
-      prop="name"
+      prop="deptName"
       label="科室"
       width="100">
     </el-table-column>
     <el-table-column
-      prop="address"
+      prop="location"
       label="地址">
     </el-table-column>
     <el-table-column
@@ -35,10 +35,14 @@
 </template>
 
 <script>
+  import axios from  'axios'
+  import qs from 'qs'
+
     export default {
       name: "record",
       data() {
         return {
+          records: [],
           tableData: [{
             date: '2016-05-02 14:30-16:30',
             name: '王小虎',
@@ -57,6 +61,18 @@
             address: '上海市普陀区金沙江路 1516 弄'
           }]
         }
+      },
+      mounted(){
+        axios.post("http://localhost:8081/getRecordsByPatientId", qs.stringify({
+          userId: this.$store.state.userId
+        })).then(res=>{
+          res.data.forEach(record=>{
+            record.date = record.date.substr(0, 10) + ' ' + record.date.substr(11, 5)
+          })
+          this.records = res.data
+        }).catch(err=>{
+          console.log(err)
+        })
       }
     }
 </script>

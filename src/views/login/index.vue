@@ -8,7 +8,7 @@
         <h3 class="title">用户登录</h3>
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="phoneNumber">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
@@ -63,8 +63,7 @@
                   />
               </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <img id="imgVerifyCode"  style="margin-left:20px;margin-top:10px;cursor:pointer;" onclick="javascript:changeVerifyCode();" src="../../assets/VerifyCodeAction_getVerifyCode.jpg" />
+          <el-col :span="8" id="codeImage">
           </el-col>
       </el-row>
 
@@ -93,44 +92,91 @@ import { validPhoneNumber } from '../../utils/validate'
 import MyHeader from '../../components/common/MyHeader'
 import MyFooter from '../../components/common/MyFooter'
 import axios from 'axios'
-// import qs from "qs";
 import qs from 'qs'
+import Vue from 'vue'
+import { mapMutations } from 'vuex';
+
+//image的click事件不能触发。vue没有将其作为vue的模板解析渲染,不用v-html而是component模板编译
+//https://blog.csdn.net/qq_31393401/article/details/81017912
+let ImageComponent = Vue.extend({
+  template: '<el-image id="imgVerifyCode"  style="margin-left:20px;margin-top:10px;cursor:pointer;" @click.native="changeVerifyCode" :src="codeSrc"  alt=""/>',
+  computed:{
+    codeSrc: function () {
+      return "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+    }
+  },
+  methods: {
+    //看不清，换一张
+    changeVerifyCode() {
+      // this.loginForm.codeSrc = "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+      let img = document.getElementById("imgVerifyCode");
+      img.src = "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+    }
+  }
+});
+let component = new ImageComponent().$mount();
 
 export default {
   name: 'Login',
   components: {MyHeader, MyFooter},
   data() {
+    //图形验证码验证
+    const checkCode = (rule, value, callback)=>{
+      let regex = /^\d{6}$/;
+      if (!regex.test(value)) {
+        callback(new Error("输入6位数字验证码"));
+      } else {
+        //解决跨域时每次访问请求时sessionId不同 https://blog.csdn.net/weixin_40461281/article/details/81196932
+        axios.defaults.withCredentials = true;
+        axios.post("http://localhost:8081/checkVerifyCode", qs.stringify({
+          name: "loginCode",
+          code: this.loginForm.verificationCode
+        })).then(res=>{
+          if (res.data.flag==="no"){
+            // alert(res.data.message);
+            callback(new Error(res.data.message));
+          }else {
+            callback();
+          }
+        }).catch(err=>{
+          console.log(err)
+        });
+      }
+    };
     const validPhoneNumber = (rule, value, callback) => {
       if (!validPhoneNumber(value)) {
         callback(new Error('请输入正确的手机号！'))
       } else {
         callback()
       }
-    }
+    };
     const validatePassword = (rule, value, callback) => {
       if (value.length < 6) {
         callback(new Error('密码不能少于6位！'))
       } else {
         callback()
       }
-    }
+    };
     return {
-      urlOfImg: require('../../assets/jyzn-p.jpg'),
+      // urlOfImg: require('../../assets/jyzn-p.jpg'),
       loginForm: {
         username: '18251806718',
         password: '123456',
-        verificationCode: ''
+        verificationCode: '',
+        // codeSrc: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validPhoneNumber }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        verificationCode: [{ required: true, trigger: 'blur', validator: checkCode }]
       },
       passwordType: 'password',
       capsTooltip: false,
       loading: false,
       showDialog: false,
       redirect: undefined,
-      otherQuery: {}
+      otherQuery: {},
+      userToken: ''
     }
   },
   watch: {
@@ -154,11 +200,13 @@ export default {
     } else if (this.loginForm.password === '') {
       this.$refs.password.focus()
     }
+    document.getElementById('codeImage').appendChild(component.$el);
   },
   destroyed() {
     // window.removeEventListener('storage', this.afterQRScan)
   },
   methods: {
+    ...mapMutations(['changeLogin']),
     checkCapslock({ shiftKey, key } = {}) {
       if (key && key.length === 1) {
         if (shiftKey && (key >= 'a' && key <= 'z') || !shiftKey && (key >= 'A' && key <= 'Z')) {
@@ -182,10 +230,10 @@ export default {
       })
     },
     handleLogin() {
-      /*this.$refs.loginForm.validate(valid => {
+      /*this.$refs.registerForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
+          this.$store.dispatch('user/login', this.registerForm)
             .then(() => {
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
               this.loading = false
@@ -198,29 +246,24 @@ export default {
           return false
         }
       })*/
+      let name = '';
       axios.post('http://localhost:8081/doLogin', qs.stringify({
         userName : this.loginForm.username,
         password : this.loginForm.password
       })).then((res)=>{
-        if (res.data.flag==='success'){
+        if (res.data.message==='success'){
+          this.userToken = res.data.token;
+          name = res.data.user.name == null ? res.data.user.phoneNumber : res.data.user.name;
+          this.changeLogin({ Authorization: this.userToken,  userName: name, userId: res.data.user.id});
           this.$router.push({
             path: '/'
           })
         } else {
-          alert(res.data.flag)
+          alert(res.data.message)
         }}).catch(function (err) {
           alert("Error:"+err);
           console.log(err)
       });
-      /*if (this.loginForm.username=='admin' && this.loginForm.password=='111111'){
-        this.$router.push({
-          path: '/'
-        })
-      }else {
-        alert("用户名或密码错误！");
-        console.log('error submit!!')
-        return false
-      }*/
     },
     getOtherQuery(query) {
       return Object.keys(query).reduce((acc, cur) => {
@@ -234,9 +277,11 @@ export default {
       this.$router.push({
         path: '/register'
       })
-    }
+    },
   }
 }
+
+
 </script>
 
 <style lang="scss">

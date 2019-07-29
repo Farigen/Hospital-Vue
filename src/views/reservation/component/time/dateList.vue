@@ -6,7 +6,7 @@
     </div>
     <div class="reservation-time">
       <ul>
-          <SingleDate v-for="(date, index) in timeArrayOfNormal" :key="index" :date="date" />
+          <SingleDate v-for="(register, index) in registers" :key="index" :register="register" />
       </ul>
     </div>
     <!--<el-backtop target=".page-component__scroll .el-scrollbar__wrap"></el-backtop>-->
@@ -16,6 +16,7 @@
 <script>
   import axios from 'axios'
   import SingleDate from './singleDate'
+  import qs from 'qs'
 
     export default {
         name: "dateList",
@@ -23,23 +24,38 @@
         data(){
           return{
             dept: '',
-            timeArrayOfNormal: [],
-            timeArrayOfExpert: [],
-            nowTime: '',
+            // timeArrayOfNormal: [],
+            // dateStringArray: [],
+            // nowTime: '',
+            registers: [],
+            dateArray: []
           }
         },
       mounted() {
-          /*axios.post('/getTime').then(res =>{
-
+          axios.post("http://localhost:8081/getRegisterByDocName", qs.stringify({
+            docName: this.$route.params.doc
+          })).then(res=>{
+            this.registers = res.data
+            /*this.registers.forEach(register=>{
+              this.dateArray.push(
+                new Date(register.dateTime.substr(5, 2) + ' ' + register.dateTime.substr(8, 2) + ','
+                  + register.dateTime.substr(0, 4) + ' ' + register.dateTime.substr(11, 8))
+              )
+            });
+            for (let i = 1; i < this.dateArray.length; i++) {
+              if (this.dateArray[i].getTime())
+            }
+            this.dateArray.forEach(date=>{
+              // this.dateStringArray.push(this.getDateString(date))
+              if (date.get)
+            })*/
           }).catch(err=>{
+            console.log(err)
+          });
+          /*this.nowTimes();*/
 
-          })*/
-          this.nowTimes();
       },
       methods: {
-          getWeek(weekNo) {
-            return "星期" + "日一二三四五六".charAt(weekNo);
-           },
           getTimeArrayOfNormal(){
             const tempArray = [];
             let nowDate = new Date();

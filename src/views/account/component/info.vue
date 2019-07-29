@@ -31,16 +31,16 @@
         <el-row>
           <el-col :span="3" :offset="3" >
              <span class="svg-container" style="float: right;">
-                <svg-icon icon-class="yonghuming" />
-                <span style="margin-left: 10px;" >用户名：</span>
+                <svg-icon icon-class="email" />
+                <span style="margin-left: 10px;" >邮&nbsp;&nbsp;&nbsp;箱：</span>
              </span>
           </el-col>
           <el-col :span="14" :offset="1">
             <el-input
-              ref="username"
-              v-model="infoForm.username"
-              placeholder="Username"
-              name="username"
+              ref="email"
+              v-model="infoForm.email"
+              placeholder="邮箱"
+              name="email"
               type="text"
               tabindex="2"
               autocomplete="on"
@@ -142,6 +142,8 @@
 <script>
   import { validUsername } from '../../../utils/validate'
   import axios from 'axios'
+  import qs from 'qs'
+
 
     export default {
       name: "info",
@@ -161,10 +163,9 @@
           }
         }
         return {
-          // urlOfImg: require('../../assets/jyzn-p.jpg'),
           infoForm: {
-            nickname: 'admin',
-            username: 'admin',
+            nickname: '',
+            email: '',
             gender: 1,
             birthday: '',
             IDCardNo: '',
@@ -177,19 +178,56 @@
           loading: false,
           showDialog: false,
           redirect: undefined,
-          otherQuery: {}
+          otherQuery: {},
+          user: {}
         }
       },
       mounted(){
-       /* axios.post('').then(res=>{
-
+        axios.post('http://localhost:8081/getAccountInfo', qs.stringify({
+          userId: this.$store.state.userId
+        })).then(res=>{
+          this.user = res.data;
+          this.infoForm.nickname = res.data.name;
+          this.infoForm.email = res.data.email;
+          this.infoForm.gender = res.data.gender;
+          this.infoForm.IDCardNo = res.data.idCard;
+          this.infoForm.phoneNo = res.data.phoneNumber;
+          this.infoForm.birthday = res.data.birthday;
         }).catch(err=>{
           console.log(err)
-        })*/
+        })
       },
       methods: {
         handleSubmit(){
-
+          this.$refs.infoForm.validate(valid=>{
+            if (valid) {
+              // this.$store.dispatch('http://localhost:8081/updateAccountInfo', this.infoForm).then(()=>{
+              //   alert('done!')
+              // }).catch(err=>{
+              //   console.log(err)
+              // })
+              axios.post('http://localhost:8081/updateAccountInfo', qs.stringify({
+                userId: this.$store.state.userId,
+                name: this.infoForm.nickname,
+                idCard: this.infoForm.IDCardNo,
+                gender: this.infoForm.gender,
+                email: this.infoForm.email,
+                phoneNumber: this.infoForm.phoneNo,
+                birthday: this.infoForm.birthday
+              })).then(res=>{
+                if (res.data.flag === 'success') {
+                  alert('提交成功！')
+                }else {
+                  alert('提交失败！')
+                }
+              }).catch(err=>{
+                console.log(err)
+              })
+            }else {
+              console.log('error submit!!')
+              return false
+            }
+          })
         }
       }
     }

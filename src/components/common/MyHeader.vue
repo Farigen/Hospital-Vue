@@ -4,10 +4,26 @@
           <el-col :span="12" :offset="2">
               <el-image :src="url"></el-image>
           </el-col>
-        <el-col :span="2" :offset="5">
+        <el-col :span="2" :offset="5" v-if="showUserName === false">
             <div class="login" @click="handleLogin">
                 <span>登录</span>
             </div>
+        </el-col>
+        <el-col :span="2" :offset="5" v-if="showUserName === true">
+          <div class="login" @click="showDropDown">
+            <el-dropdown @command="handleCommand" class="dropdown">
+              <span class="el-dropdown-link">
+                {{userName}}
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="info">个人中心</el-dropdown-item>
+                <el-dropdown-item command="record">我的记录</el-dropdown-item>
+                <el-dropdown-item command="security">安全设置</el-dropdown-item>
+                <el-dropdown-item command="logout">注销账户</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+            <!--<span>{{userName}}</span>-->
+          </div>
         </el-col>
         <el-col :span="2">
           <div class="login">
@@ -55,15 +71,28 @@
 </template>
 
 <script>
+  import { mapMutations } from 'vuex';
+
     export default {
         name: "MyHeader",
         data(){
           return{
             url : require('../../assets/logo.jpg'),
-            activeIndex: '1'
+            activeIndex: '1',
+            showUserName: false,
+            userName: ''
           }
         },
+      mounted(){
+        if (this.$store.state.Authorization !== ''){
+          this.showUserName = true;
+          this.userName = this.$store.state.userName;
+        } else {
+          this.showUserName = false;
+        }
+      },
       methods:{
+          ...mapMutations(['logout']),
           handleClick(){
             this.$router.push({
               path: '/'
@@ -73,7 +102,32 @@
             this.$router.push({
               path: '/login'
             })
-          }
+          },
+        showDropDown(){
+
+        },
+        handleCommand(command){
+            switch (command) {
+              case 'info': {
+                this.$router.push('/account/info')
+                break
+              }
+              case 'record': {
+                this.$router.push('/account/record')
+                break
+              }
+              case 'security': {
+                this.$router.push('/account/security')
+                break
+              }
+              case 'logout': {
+                this.logout();
+                // 刷新页面，整个浏览器进行了重新加载，闪烁
+                this.$router.go(0);
+                break
+              }
+            }
+        }
       }
     }
 </script>
@@ -94,5 +148,12 @@
   .login:hover{
     background-color: #409EFF;
     color: white;
+  }
+  .dropdown{
+    color: #0588D1;
+  }
+  .dropdown:hover{
+    color: white;
+    background-color: #409EFF;
   }
 </style>

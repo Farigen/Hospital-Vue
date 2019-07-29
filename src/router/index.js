@@ -77,6 +77,34 @@ export const constRouters = [
     ]
   },
 ]
-export default  new VueRouter({
+const router =   new VueRouter({
   routes: constRouters
-})
+});
+export default router;
+
+// 导航守卫
+// 使用 router.beforeEach 注册一个全局前置守卫，判断用户是否登陆
+router.beforeEach((to, from, next) => {
+  if (to.path === '/show') {
+    let token = localStorage.getItem('Authorization');
+    if (token === 'null' || token === '') {
+      next('/doLogin');
+    } else {
+      next();
+    }
+  }else{
+    next();
+  }
+  /*if (to.path === '/doLogin') {
+    next();
+  } else {
+    let token = localStorage.getItem('Authorization');
+
+    if (token === 'null' || token === '') {
+      next('/doLogin');
+    } else {
+      next();
+    }
+  }*/
+});
+
