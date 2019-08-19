@@ -90,7 +90,7 @@
           </el-col>
       </el-row>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleRegister">登录</el-button>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleRegister">注册</el-button>
 
       <div style="position:relative;margin-top: 30px">
         <!--<div class="tips">
@@ -101,8 +101,8 @@
           <span style="margin-right:18px;">Username : editor</span>
           <span>Password : any</span>
         </div>-->
-        <el-button class="thirdparty-button" type="primary" @click.native.prevent="register">
-          注册
+        <el-button class="thirdparty-button" type="primary" @click.native.prevent="handleLogin">
+          登录
         </el-button>
       </div>
     </el-form>
@@ -146,6 +146,7 @@ export default {
     const checkCode = (rule, value, callback)=>{
       let regex = /^\d{6}$/;
       if (!regex.test(value)) {
+        this.registerForm.isVerificationCodeTrue = false;
         callback(new Error("输入6位数字验证码"));
       } else {
         //解决跨域时每次访问请求时sessionId不同 https://blog.csdn.net/weixin_40461281/article/details/81196932
@@ -155,9 +156,10 @@ export default {
           code: this.registerForm.verificationCode
         })).then(res=>{
           if (res.data.flag==="no"){
-            // alert(res.data.message);
+            this.registerForm.isVerificationCodeTrue = false;
             callback(new Error(res.data.message));
           }else {
+            this.registerForm.isVerificationCodeTrue = true;
             callback();
           }
         }).catch(err=>{
@@ -171,14 +173,14 @@ export default {
       } else {
         callback()
       }
-    }
+    };
     const validatePassword = (rule, value, callback) => {
       if (value.length < 6) {
         callback(new Error('密码不能少于6位！'))
       } else {
         callback()
       }
-    }
+    };
     return {
       registerForm: {
         username: '18251806718',
@@ -195,12 +197,9 @@ export default {
       passwordType: 'password',
       capsTooltip: false,
       loading: false,
-      showDialog: false,
+      isVerificationCodeTrue: true,
       redirect: undefined,
     }
-  },
-  created() {
-    // window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
     if (this.registerForm.username === '') {
@@ -209,9 +208,6 @@ export default {
       this.$refs.password.focus()
     }
     document.getElementById('codeImage').appendChild(component.$el);
-  },
-  destroyed() {
-    // window.removeEventListener('storage', this.afterQRScan)
   },
   methods: {
     checkCapslock({ shiftKey, key } = {}) {
@@ -253,36 +249,31 @@ export default {
           return false
         }
       })*/
+      if (this.registerForm.isVerificationCodeTrue === false){
+        return
+      }
       if (!(this.registerForm.password === this.registerForm.confirmPassword)) {
         alert('两次输入的密码不同！');
-      }else {
-        axios.post('http://localhost:8081/doRegistration', qs.stringify({
-          phoneNumber : this.registerForm.username,
-          password : this.registerForm.password
-        })).then((res)=>{
-          if (res.data.flag==='success'){
-            this.$router.push({
-              path: '/'
-            })
-          } else {
-            alert("服务器端产生错误，请重试!")
-          }}).catch(function (err) {
-          alert("Error:"+err);
-          console.log(err)
-        });
+        return
       }
+      axios.post('http://localhost:8081/doRegistration', qs.stringify({
+        phoneNumber : this.registerForm.username,
+        password : this.registerForm.password
+      })).then((res)=>{
+        if (res.data.flag==='success'){
+          this.$router.push({
+            path: '/'
+          })
+        } else {
+          alert("服务器端产生错误，请重试!")
+        }}).catch(function (err) {
+        alert("Error:"+err);
+        console.log(err)
+      });
     },
-    getOtherQuery(query) {
-      return Object.keys(query).reduce((acc, cur) => {
-        if (cur !== 'redirect') {
-          acc[cur] = query[cur]
-        }
-        return acc
-      }, {})
-    },
-    register(){
+    handleLogin(){
       this.$router.push({
-        path: '/register'
+        path: '/login'
       })
     }
   }

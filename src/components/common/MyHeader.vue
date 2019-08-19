@@ -9,11 +9,11 @@
                 <span>登录</span>
             </div>
         </el-col>
-        <el-col :span="2" :offset="5" v-if="showUserName === true">
-          <div class="login" @click="showDropDown">
+        <el-col :span="3" :offset="5" v-if="showUserName === true">
+          <div class="login">
             <el-dropdown @command="handleCommand" class="dropdown">
               <span class="el-dropdown-link">
-                {{userName}}
+                {{userName}}，欢迎您
               </span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="info">个人中心</el-dropdown-item>
@@ -25,8 +25,8 @@
             <!--<span>{{userName}}</span>-->
           </div>
         </el-col>
-        <el-col :span="2">
-          <div class="login">
+        <el-col :span="2" v-if="showUserName === false">
+          <div class="login" @click="handleRegister">
             注册
           </div>
         </el-col>
@@ -42,29 +42,26 @@
           <el-menu-item style="margin-left: 10%;" index="1" @click="handleClick">首页</el-menu-item>
           <el-submenu index="2" style="margin-left: 10px;">
             <template slot="title">医院概况</template>
-            <el-menu-item index="2-1">选项1</el-menu-item>
-            <el-menu-item index="2-2">选项2</el-menu-item>
+            <el-menu-item index="2-1">医院简介</el-menu-item>
+            <el-menu-item index="2-2">机构设置</el-menu-item>
+            <el-menu-item index="2-3">医院位置</el-menu-item>
+            <el-menu-item index="2-4">院长信箱</el-menu-item>
           </el-submenu>
           <el-submenu index="3">
             <template slot="title">学科介绍</template>
-            <el-menu-item index="3-1">选项1</el-menu-item>
-            <el-menu-item index="3-2">选项2</el-menu-item>
-            <el-menu-item index="3-3">选项3</el-menu-item>
-            <el-submenu index="3-4">
-              <template slot="title">选项4</template>
-              <el-menu-item index="3-4-1">选项1</el-menu-item>
-              <el-menu-item index="3-4-2">选项2</el-menu-item>
-              <el-menu-item index="3-4-3">选项3</el-menu-item>
-            </el-submenu>
+            <el-menu-item index="3-1">非手术科室</el-menu-item>
+            <el-menu-item index="3-2">手术科室</el-menu-item>
+            <el-menu-item index="3-3">平台科室</el-menu-item>
           </el-submenu>
           <el-submenu index="4">
             <template slot="title">专家介绍</template>
-            <el-menu-item index="4-1">选项1</el-menu-item>
-            <el-menu-item index="4-2">选项2</el-menu-item>
-            <el-menu-item index="4-3">选项3</el-menu-item>
+            <el-menu-item index="4-1">非手术科室</el-menu-item>
+            <el-menu-item index="4-2">手术科室</el-menu-item>
+            <el-menu-item index="4-3">平台科室</el-menu-item>
           </el-submenu>
           <el-menu-item index="5">预约挂号</el-menu-item>
-          <el-menu-item index="6"><a href="https://www.ele.me" target="_blank">就诊指南</a></el-menu-item>
+          <!--<a href="https://www.ele.me" target="_blank"></a>-->
+          <el-menu-item index="6">就诊指南</el-menu-item>
         </el-menu>
       </el-row>
   </div>
@@ -72,6 +69,7 @@
 
 <script>
   import { mapMutations } from 'vuex';
+  import {isAccount} from "../../utils/validate";
 
     export default {
         name: "MyHeader",
@@ -92,19 +90,21 @@
         }
       },
       methods:{
-          ...mapMutations(['logout']),
-          handleClick(){
-            this.$router.push({
-              path: '/'
-            })
-          },
-          handleLogin(){
-            this.$router.push({
-              path: '/login'
-            })
-          },
-        showDropDown(){
-
+        ...mapMutations(['logout']),
+        handleClick() {
+          this.$router.push({
+            path: '/'
+          })
+        },
+        handleLogin() {
+          this.$router.push({
+            path: '/login'
+          })
+        },
+        handleRegister(){
+          this.$router.push({
+            path: '/register'
+          })
         },
         handleCommand(command){
             switch (command) {
@@ -122,9 +122,15 @@
               }
               case 'logout': {
                 this.logout();
-                // 刷新页面，整个浏览器进行了重新加载，闪烁
-                this.$router.go(0);
-                break
+                if (isAccount(this.$route.path)) {
+                  this.$router.push({
+                    path: '/'
+                  })
+                }else{
+                  // 刷新页面，整个浏览器进行了重新加载，闪烁
+                  this.$router.go(0);
+                  break
+                }
               }
             }
         }

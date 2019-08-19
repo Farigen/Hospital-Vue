@@ -10,6 +10,9 @@ export function isExternal(path) {
   return /^(https?:|mailto:|tel:)/.test(path)
 }
 
+export function isAccount(path) {
+  return /^(\/account\/)/.test(path)
+}
 /**
  * @param {string} str
  * @returns {Boolean}

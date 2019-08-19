@@ -21,11 +21,14 @@ const store = new Vuex.Store({
       localStorage.setItem('userName', user.userName);
       localStorage.setItem('userId', user.userId);
     },
+    // 注销用户时删除token
     logout(state, user){
       state.Authorization = '';
       state.userName = '';
+      state.userId = '';
       localStorage.setItem('Authorization', '');
       localStorage.setItem('userName', '');
+      localStorage.setItem('userId', '');
     }
   },
   getters: {

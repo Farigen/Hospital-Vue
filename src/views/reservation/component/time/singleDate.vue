@@ -68,6 +68,7 @@
   import axios from 'axios'
   import qs from 'qs'
 
+
     export default {
         name: "singleDate",
         props: {
@@ -109,6 +110,16 @@
             }
           },
           handleSubmit(){
+            if (this.$store.state.userId === ''){
+              alert('请先登录！本页面将在两秒后跳转到登录页面!');
+              let that = this;
+              setTimeout(function () {
+                that.$router.push({
+                  path: '/login'
+                })
+              }, 2000);
+              return
+            }
             axios.post("http://localhost:8081/addPatientOrder", qs.stringify({
               registerId: this.register.id,
               userId: this.$store.state.userId,

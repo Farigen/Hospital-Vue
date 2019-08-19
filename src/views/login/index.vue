@@ -124,6 +124,7 @@ export default {
     const checkCode = (rule, value, callback)=>{
       let regex = /^\d{6}$/;
       if (!regex.test(value)) {
+        this.loginForm.isVerificationCodeTrue = false;
         callback(new Error("输入6位数字验证码"));
       } else {
         //解决跨域时每次访问请求时sessionId不同 https://blog.csdn.net/weixin_40461281/article/details/81196932
@@ -133,9 +134,10 @@ export default {
           code: this.loginForm.verificationCode
         })).then(res=>{
           if (res.data.flag==="no"){
-            // alert(res.data.message);
+            this.loginForm.isVerificationCodeTrue = false;
             callback(new Error(res.data.message));
           }else {
+            this.loginForm.isVerificationCodeTrue = true;
             callback();
           }
         }).catch(err=>{
@@ -173,24 +175,24 @@ export default {
       passwordType: 'password',
       capsTooltip: false,
       loading: false,
-      showDialog: false,
+      isVerificationCodeTrue: true,
       redirect: undefined,
       otherQuery: {},
       userToken: ''
     }
   },
-  watch: {
+ /* watch: {
     $route: {
       handler: function(route) {
-        /*const query = route.query
+        /!*const query = route.query
         if (query) {
           this.redirect = query.redirect
           this.otherQuery = this.getOtherQuery(query)
-        }*/
+        }*!/
       },
       immediate: true
     }
-  },
+  },*/
   created() {
     // window.addEventListener('storage', this.afterQRScan)
   },
@@ -246,6 +248,9 @@ export default {
           return false
         }
       })*/
+      if (this.loginForm.isVerificationCodeTrue === false){
+        return
+      }
       let name = '';
       axios.post('http://localhost:8081/doLogin', qs.stringify({
         userName : this.loginForm.username,
