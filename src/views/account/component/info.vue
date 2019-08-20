@@ -154,14 +154,14 @@
           } else {
             callback()
           }
-        }
+        };
         const validatePassword = (rule, value, callback) => {
           if (value.length < 6) {
             callback(new Error('密码不能少于6位！'))
           } else {
             callback()
           }
-        }
+        };
         return {
           infoForm: {
             nickname: '',
@@ -206,7 +206,7 @@
               // }).catch(err=>{
               //   console.log(err)
               // })
-              axios.post('http://localhost:8081/updateAccountInfo', qs.stringify({
+              axios.post('/updateAccountInfo', qs.stringify({
                 userId: this.$store.state.userId,
                 name: this.infoForm.nickname,
                 idCard: this.infoForm.IDCardNo,
@@ -224,7 +224,7 @@
                 console.log(err)
               })
             }else {
-              console.log('error submit!!')
+              console.log('error submit!!');
               return false
             }
           })

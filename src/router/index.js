@@ -1,7 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import {isAccount} from '../utils/validate'
 
 Vue.use(VueRouter)
+
 
 export const constRouters = [
   {
@@ -76,16 +78,22 @@ export const constRouters = [
 
     ]
   },
-]
+  {
+    path: '*',
+    component:()=>import('../views/error/404')
+  }
+];
 const router =   new VueRouter({
-  routes: constRouters
+  routes: constRouters,
+  // 删去url上的#，开启history模式，reference: https://blog.csdn.net/lensgcx/article/details/78439514
+  mode: 'history'
 });
 export default router;
 
 // 导航守卫
 // 使用 router.beforeEach 注册一个全局前置守卫，判断用户是否登陆
 router.beforeEach((to, from, next) => {
-  if (to.path === '/show') {
+  if (isAccount(to.path)) {
     let token = localStorage.getItem('Authorization');
     if (token === 'null' || token === '') {
       next('/doLogin');

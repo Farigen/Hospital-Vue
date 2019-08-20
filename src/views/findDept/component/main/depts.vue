@@ -29,7 +29,7 @@
         },
         mounted() {
           // this.type = this.$route.params.name;
-          axios.post('http://localhost:8081/getDeptsByTypeName', qs.stringify({
+          axios.post('/getDeptsByTypeName', qs.stringify({
             typeName: this.type
           })).then(res =>{
             const temp = [];
@@ -69,7 +69,7 @@
       // next是在组件生成后会调用
       beforeRouteEnter(to, from, next) {
         //axios包含vm是为了保证先得到数据再赋值渲染
-        axios.post('http://localhost:8081/getDeptsByTypeName', qs.stringify({
+        axios.post('/getDeptsByTypeName', qs.stringify({
           typeName: to.params.name
         })).then(res =>{
           next((vm) => {
@@ -82,7 +82,7 @@
 
     // 这个方法是路由不变,只变参数时执行
       beforeRouteUpdate(to, from, next) {
-        axios.post('http://localhost:8081/getDeptsByTypeName', qs.stringify({
+        axios.post('/getDeptsByTypeName', qs.stringify({
           typeName: to.params.name
         })).then(res =>{
           this.setData(res)

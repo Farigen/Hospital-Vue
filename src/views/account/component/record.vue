@@ -63,12 +63,12 @@
         }
       },
       mounted(){
-        axios.post("http://localhost:8081/getRecordsByPatientId", qs.stringify({
+        axios.post("/getRecordsByPatientId", qs.stringify({
           userId: this.$store.state.userId
         })).then(res=>{
           res.data.forEach(record=>{
             record.date = record.date.substr(0, 10) + ' ' + record.date.substr(11, 5)
-          })
+          });
           this.records = res.data
         }).catch(err=>{
           console.log(err)

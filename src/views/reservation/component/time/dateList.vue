@@ -32,7 +32,7 @@
           }
         },
       mounted() {
-          axios.post("http://localhost:8081/getRegisterByDocName", qs.stringify({
+          axios.post("/getRegisterByDocName", qs.stringify({
             docName: this.$route.params.doc
           })).then(res=>{
             this.registers = res.data
@@ -61,7 +61,7 @@
             let nowDate = new Date();
             let hh = nowDate.getHours();
             if (hh <= 12) {
-              tempArray.push('今天上午')
+              tempArray.push('今天上午');
               tempArray.push('今天下午')
             }else if(12 < hh) {
               tempArray.push('今天下午')

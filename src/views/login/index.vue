@@ -102,7 +102,7 @@ let ImageComponent = Vue.extend({
   template: '<el-image id="imgVerifyCode"  style="margin-left:20px;margin-top:10px;cursor:pointer;" @click.native="changeVerifyCode" :src="codeSrc"  alt=""/>',
   computed:{
     codeSrc: function () {
-      return "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+      return "/getVerifyCode?name=loginCode&key=" + new Date().getTime();
     }
   },
   methods: {
@@ -110,7 +110,7 @@ let ImageComponent = Vue.extend({
     changeVerifyCode() {
       // this.loginForm.codeSrc = "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
       let img = document.getElementById("imgVerifyCode");
-      img.src = "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+      img.src = "/getVerifyCode?name=loginCode&key=" + new Date().getTime();
     }
   }
 });
@@ -129,7 +129,7 @@ export default {
       } else {
         //解决跨域时每次访问请求时sessionId不同 https://blog.csdn.net/weixin_40461281/article/details/81196932
         axios.defaults.withCredentials = true;
-        axios.post("http://localhost:8081/checkVerifyCode", qs.stringify({
+        axios.post("/checkVerifyCode", qs.stringify({
           name: "loginCode",
           code: this.loginForm.verificationCode
         })).then(res=>{
@@ -252,7 +252,8 @@ export default {
         return
       }
       let name = '';
-      axios.post('http://localhost:8081/doLogin', qs.stringify({
+      // http://localhost:8081/doLogin
+      axios.post('/doLogin', qs.stringify({
         userName : this.loginForm.username,
         password : this.loginForm.password
       })).then((res)=>{

@@ -22,13 +22,6 @@
         name: "sideNav",
         methods: {
           handleClick(type){
-            /*alert(type);*/
-            /*axios.post('/getTypeOfDepts').then(response =>{
-                this.types = response;
-            }).catch(function (err) {
-              console.log(err);
-            })*/
-            /*pubsub.publish()*/
           }
         },
         data(){

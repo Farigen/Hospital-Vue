@@ -120,7 +120,7 @@
               }, 2000);
               return
             }
-            axios.post("http://localhost:8081/addPatientOrder", qs.stringify({
+            axios.post("/addPatientOrder", qs.stringify({
               registerId: this.register.id,
               userId: this.$store.state.userId,
             })).then(res=>{

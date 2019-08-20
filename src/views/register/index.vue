@@ -124,7 +124,7 @@ let ImageComponent = Vue.extend({
   template: '<el-image id="imgVerifyCode"  style="margin-left:20px;margin-top:10px;cursor:pointer;" @click.native="changeVerifyCode" :src="codeSrc"  alt=""/>',
   computed:{
     codeSrc: function () {
-      return "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+      return "/getVerifyCode?name=loginCode&key=" + new Date().getTime();
     }
   },
   methods: {
@@ -132,7 +132,7 @@ let ImageComponent = Vue.extend({
     changeVerifyCode() {
       // this.loginForm.codeSrc = "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
       let img = document.getElementById("imgVerifyCode");
-      img.src = "http://localhost:8081/getVerifyCode?name=loginCode&key=" + new Date().getTime();
+      img.src = "/getVerifyCode?name=loginCode&key=" + new Date().getTime();
     }
   }
 });
@@ -151,7 +151,7 @@ export default {
       } else {
         //解决跨域时每次访问请求时sessionId不同 https://blog.csdn.net/weixin_40461281/article/details/81196932
         axios.defaults.withCredentials = true;
-        axios.post("http://localhost:8081/checkVerifyCode", qs.stringify({
+        axios.post("/checkVerifyCode", qs.stringify({
           name: "loginCode",
           code: this.registerForm.verificationCode
         })).then(res=>{
@@ -256,7 +256,7 @@ export default {
         alert('两次输入的密码不同！');
         return
       }
-      axios.post('http://localhost:8081/doRegistration', qs.stringify({
+      axios.post('/doRegistration', qs.stringify({
         phoneNumber : this.registerForm.username,
         password : this.registerForm.password
       })).then((res)=>{
@@ -301,16 +301,16 @@ $cursor: #fff;
 
     input {
       background: transparent;
-      border: 0px;
+      border: 0;
       -webkit-appearance: none;
-      border-radius: 0px;
+      border-radius: 0;
       padding: 12px 5px 12px 15px;
       color: $light_gray;
       height: 47px;
       /*caret-color: $cursor;*/
 
       &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px $bg inset !important;
+        box-shadow: 0 0 0 1000px $bg inset !important;
         -webkit-text-fill-color: $cursor !important;
       }
     }
@@ -376,7 +376,7 @@ $light_gray:#eee;
     .title {
       font-size: 26px;
       color: #0588D1;
-      margin: 0px auto 40px auto;
+      margin: 0 auto 40px auto;
       text-align: center;
       font-weight: bold;
     }

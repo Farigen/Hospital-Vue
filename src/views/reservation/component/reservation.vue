@@ -58,7 +58,7 @@
           }
         },
       mounted() {
-        axios.post('http://localhost:8081/getDocsByDeptName', qs.stringify({
+        axios.post('/getDocsByDeptName', qs.stringify({
           deptName : this.$route.params.dept
         })).then(res =>{
           const temp = [];
