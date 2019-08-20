@@ -33,7 +33,7 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 
 ## 关于跨域
 
-本项目在构建初期是以跨域的方式访问后端，之后为了将前后端整合，将Vue并入了Springboot项目中，但Vue中相关的跨域配置几乎未变，仅将axios请求的url进行了相应的改变，删去了"http://localhost:8081"，故如之后项目想要前后端分离，只需在axios请求的url上加上即可。
+本项目在构建初期是以跨域的方式访问后端，之后为了将前后端整合，将Vue并入了Springboot项目中，但Vue中相关的跨域配置几乎未变，仅将axios请求的url进行了相应的改变，删去了"http://localhost:8081", 故之后的若需要将前后端分离，只需要加上即可。
 
 
 
